@@ -1,0 +1,34 @@
+services:
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    ports:
+      - "8001:8000"
+    environment:
+      - PORT=8000
+      - WORKERS=2
+      - GDAL_CACHEMAX=512
+      - GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
+      - GDAL_HTTP_MERGE_CONSECUTIVE_RANGES=YES
+      - GDAL_HTTP_MULTIPLEX=YES
+      - GDAL_HTTP_VERSION=2
+      - VSI_CACHE=TRUE
+      - VSI_CACHE_SIZE=5000000
+      - AWS_NO_SIGN_REQUEST=YES
+      - AWS_REQUEST_PAYER=requester
+      - AWS_ACCESS_KEY_ID=
+      - AWS_SECRET_ACCESS_KEY=
+
+  geosense:
+    build: .
+    ports:
+      - "8085:8080"
+    depends_on:
+      - titiler
+    environment:
+      - TITILER_ENDPOINT=http://titiler:8000
+      - STAC_CATALOG_URL=https://earth-search.aws.element84.com/v1
+      # NASA Earthdata credentials (optional - set these if you have them)
+      # - NASA_USERNAME=your_nasa_username
+      # - NASA_PASSWORD=your_nasa_password
+    volumes:
+      - ./cache:/app/cache
