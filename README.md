@@ -1,6 +1,6 @@
 ## Project Overview
 
-GeoSense is a spectral intelligence web application that provides dynamic Earth observation capabilities using STAC (SpatioTemporal Asset Catalog), TiTiler, and runtime band math. The application offers 25+ spectral indices and 5 RGB composites for analyzing satellite imagery from multiple sensors (Sentinel-2, Landsat).
+hls-custom is a spectral intelligence web application that provides dynamic Earth observation capabilities using STAC (SpatioTemporal Asset Catalog), TiTiler, and runtime band math. The application offers 25+ spectral indices and 5 RGB composites for analyzing satellite imagery from multiple sensors (Sentinel-2, Landsat).
 
 ## Common Commands
 
