@@ -1,0 +1,273 @@
+{
+  "indices": {
+    "NDVI": {
+      "name": "Normalized Difference Vegetation Index",
+      "expression": "(nir-red)/(nir+red)",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Vegetation health and density"
+    },
+    "EVI": {
+      "name": "Enhanced Vegetation Index",
+      "expression": "2.5*((nir-red)/(nir+6*red-7.5*blue+1))",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Enhanced vegetation index with atmospheric correction"
+    },
+    "SAVI": {
+      "name": "Soil Adjusted Vegetation Index",
+      "expression": "((nir-red)/(nir+red+0.5))*1.5",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Vegetation index adjusted for soil brightness"
+    },
+    "NDWI": {
+      "name": "Normalized Difference Water Index",
+      "expression": "(green-nir)/(green+nir)",
+      "colormap": "blues",
+      "category": "water",
+      "description": "Water content and moisture"
+    },
+    "MNDWI": {
+      "name": "Modified Normalized Difference Water Index",
+      "expression": "(green-swir16)/(green+swir16)",
+      "colormap": "blues",
+      "category": "water",
+      "description": "Modified water index using SWIR"
+    },
+    "AWEI_NSH": {
+      "name": "Automated Water Extraction Index (No Shadow)",
+      "expression": "4*(green-swir16)-(0.25*nir+2.75*swir22)",
+      "colormap": "blues",
+      "category": "water",
+      "description": "Water extraction without shadow effects"
+    },
+    "NBR": {
+      "name": "Normalized Burn Ratio",
+      "expression": "(nir-swir22)/(nir+swir22)",
+      "colormap": "hot",
+      "category": "fire",
+      "description": "Burn severity and fire scars"
+    },
+    "NBRT": {
+      "name": "Normalized Burn Ratio Thermal",
+      "expression": "(nir-swir22*swir16/10000)/(nir+swir22*swir16/10000)",
+      "colormap": "hot",
+      "category": "fire",
+      "description": "Thermal-enhanced burn ratio"
+    },
+    "BAI": {
+      "name": "Burn Area Index",
+      "expression": "1/((0.1-red)^2+(0.06-nir)^2)",
+      "colormap": "hot",
+      "category": "fire",
+      "description": "Burned area identification"
+    },
+    "NDBI": {
+      "name": "Normalized Difference Built-up Index",
+      "expression": "(swir16-nir)/(swir16+nir)",
+      "colormap": "plasma",
+      "category": "urban",
+      "description": "Built-up and impervious surfaces"
+    },
+    "UI": {
+      "name": "Urban Index",
+      "expression": "(swir22-nir)/(swir22+nir)",
+      "colormap": "plasma",
+      "category": "urban",
+      "description": "Urban area identification"
+    },
+    "BUI": {
+      "name": "Built-up Index",
+      "expression": "((swir16-red)/(swir16+red))-((nir-red)/(nir+red))",
+      "colormap": "plasma",
+      "category": "urban",
+      "description": "Built-up area extraction"
+    },
+    "SI": {
+      "name": "Soil Index",
+      "expression": "((swir16+red)-(nir+blue))/((swir16+red)+(nir+blue))",
+      "colormap": "copper",
+      "category": "soil",
+      "description": "Bare soil identification"
+    },
+    "BI": {
+      "name": "Brightness Index",
+      "expression": "sqrt((red^2+nir^2)/2)",
+      "colormap": "copper",
+      "category": "soil",
+      "description": "Soil brightness"
+    },
+    "CI": {
+      "name": "Coloration Index",
+      "expression": "(red-green)/(red+green)",
+      "colormap": "copper",
+      "category": "soil",
+      "description": "Soil coloration"
+    },
+    "NDSI": {
+      "name": "Normalized Difference Snow Index",
+      "expression": "(green-swir16)/(green+swir16)",
+      "colormap": "winter",
+      "category": "snow",
+      "description": "Snow and ice cover"
+    },
+    "S2WI": {
+      "name": "Sentinel-2 Water Index",
+      "expression": "(nir08-swir16)/(nir08+swir16)",
+      "colormap": "blues",
+      "category": "water",
+      "description": "Water detection using NIR narrow band"
+    },
+    "NDMI": {
+      "name": "Normalized Difference Moisture Index",
+      "expression": "(nir-swir16)/(nir+swir16)",
+      "colormap": "BrBG",
+      "category": "moisture",
+      "description": "Vegetation moisture content"
+    },
+    "MSI": {
+      "name": "Moisture Stress Index",
+      "expression": "swir16/nir",
+      "colormap": "BrBG_r",
+      "category": "moisture",
+      "description": "Plant water stress"
+    },
+    "GNDVI": {
+      "name": "Green Normalized Difference Vegetation Index",
+      "expression": "(nir-green)/(nir+green)",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Green vegetation using green band"
+    },
+    "ARVI": {
+      "name": "Atmospherically Resistant Vegetation Index",
+      "expression": "(nir-(2*red-blue))/(nir+(2*red-blue))",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Atmospheric resistant vegetation"
+    },
+    "VARI": {
+      "name": "Visible Atmospherically Resistant Index",
+      "expression": "(green-red)/(green+red-blue)",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Visible spectrum vegetation index"
+    },
+    "MCARI": {
+      "name": "Modified Chlorophyll Absorption Ratio Index",
+      "expression": "((rededge1-red)-0.2*(rededge1-green))*(rededge1/red)",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Chlorophyll content estimation"
+    },
+    "TCI": {
+      "name": "Triangular Chlorophyll Index",
+      "expression": "1.2*(rededge1-green)-1.5*(red-green)*sqrt(rededge1/red)",
+      "colormap": "viridis",
+      "category": "vegetation",
+      "description": "Chlorophyll content triangular"
+    },
+    "PSRI": {
+      "name": "Plant Senescence Reflectance Index",
+      "expression": "(red-blue)/rededge2",
+      "colormap": "autumn",
+      "category": "vegetation",
+      "description": "Plant senescence and stress"
+    },
+    "AWEI": {
+      "name": "Automated Water Extraction Index",
+      "expression": "4*(green-swir16)-(0.25*nir+2.75*swir22)",
+      "colormap": "blues",
+      "category": "water",
+      "description": "Comprehensive water extraction combining green, NIR, and SWIR bands"
+    },
+    "BAIM": {
+      "name": "Burned Area Index Modified",
+      "expression": "1/((0.1-red)^2+(0.06-nir)^2+(0.1-swir22)^2)",
+      "colormap": "hot",
+      "category": "fire",
+      "description": "Enhanced burned area detection with SWIR band integration"
+    },
+    "SATVI": {
+      "name": "Soil Adjusted Total Vegetation Index",
+      "expression": "((swir16-red)/(swir16+red+0.5))*1.5-0.5*(swir22/10000)",
+      "colormap": "viridis",
+      "category": "topography",
+      "description": "Topography-aware vegetation index with soil adjustment and SWIR correction"
+    },
+    "AOD": {
+      "name": "Aerosol Optical Depth",
+      "expression": "(blue-0.66*swir22)/(blue+0.66*swir22)",
+      "colormap": "gray",
+      "category": "atmosphere",
+      "description": "Atmospheric aerosol content estimation using blue and SWIR bands"
+    },
+    "NDSII": {
+      "name": "Normalized Difference Snow Ice Index",
+      "expression": "(green-swir16)/(green+swir16)",
+      "colormap": "winter",
+      "category": "snow",
+      "description": "Snow and ice discrimination using green and SWIR bands"
+    },
+    "EVI2": {
+      "name": "Two-band Enhanced Vegetation Index",
+      "expression": "2.5*((nir-red)/(nir+2.4*red+1))",
+      "colormap": "viridis",
+      "category": "multisensor",
+      "description": "Simplified EVI for multisensor temporal analysis without blue band dependency"
+    }
+  },
+  "rgb_composites": {
+    "natural": {
+      "name": "Natural Color",
+      "bands": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "rescale": "0,3000",
+      "description": "Natural color composite"
+    },
+    "vivid": {
+      "name": "Vivid Natural Color",
+      "bands": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "rescale": "0,4000",
+      "description": "Ultra-vivid natural color with enhanced contrast"
+    },
+    "pansharp": {
+      "name": "Pan-Sharpened Natural",
+      "bands": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "rescale": "0,3500",
+      "description": "Pan-sharpened natural color for maximum detail"
+    },
+    "falsecolor": {
+      "name": "False Color Infrared",
+      "bands": [
+        "nir",
+        "red",
+        "green"
+      ],
+      "rescale": "0,5000",
+      "description": "Vegetation analysis false color"
+    },
+    "agriculture": {
+      "name": "Agriculture",
+      "bands": [
+        "swir16",
+        "nir",
+        "blue"
+      ],
+      "rescale": "0,4000",
+      "description": "Agricultural monitoring composite"
+    }
+  }
+}
