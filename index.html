@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="GeoSense - Dynamic Earth observation with spectral intelligence, multi-sensor harmonization, and global seamless coverage">
+    <meta name="keywords" content="earth observation, satellite imagery, spectral indices, STAC, remote sensing">
+    <title>GeoSense Spectral Intelligence</title>
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .control-panel {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.98);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-width: 320px;
+            max-height: 85vh;
+            overflow-y: auto;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section {
+            margin-bottom: 15px;
+        }
+
+        .section h1,
+        .section h2 {
+            margin: 0 0 12px 0;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 8px 12px;
+            margin: 4px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        input:focus,
+        select:focus,
+        button:focus {
+            outline: none;
+            border-color: #007cbf;
+            box-shadow: 0 0 0 2px rgba(0, 124, 191, 0.1);
+        }
+
+        button {
+            background: #007cbf;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background: #005a8b;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .primary-button {
+            background: #28a745;
+            font-weight: 600;
+        }
+
+        .primary-button:hover {
+            background: #218838;
+        }
+
+        .secondary-button {
+            background: #6c757d;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        .secondary-button:hover {
+            background: #5a6268;
+        }
+
+        .index-grid,
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .index-btn {
+            padding: 6px 8px;
+            font-size: 11px;
+            margin: 2px;
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+        }
+
+        .index-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-1px);
+        }
+
+        .index-btn:active,
+        .index-btn.active {
+            background: #007cbf;
+            color: white;
+            border-color: #007cbf;
+        }
+
+        .category {
+            margin-bottom: 10px;
+        }
+
+        .category-title {
+            font-weight: bold;
+            color: #555;
+            font-size: 11px;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+        }
+
+        .status-indicator {
+            color: #28a745;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .button-group button {
+            flex: 1;
+            margin: 0;
+            font-size: 11px;
+            padding: 6px 8px;
+        }
+
+        .help-text {
+            font-size: 10px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .mode-selector label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .mode-selector label:hover {
+            color: #007cbf;
+        }
+
+        .mode-selector input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .cache-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .cache-controls button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            max-width: 300px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 8px;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ffffff33;
+            border-top: 2px solid #ffffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <main id="map" role="main" aria-label="Interactive satellite imagery map"></main>
+    <aside class="control-panel" role="complementary" aria-label="Map controls and settings">
+        <header class="section">
+            <h1>🌍 GeoSense Intelligence</h1>
+            <div class="mode-selector">
+                <label>
+                    <input type="radio" name="mode" value="global" checked onchange="switchMode('global')">
+                    Global Coverage
+                </label>
+                <label>
+                    <input type="radio" name="mode" value="imagery" onchange="switchMode('imagery')">
+                    Specific Imagery
+                </label>
+            </div>
+        </header>
+
+        <section class="section" aria-labelledby="imagery-search-heading" id="imagery-search-section" style="display: none;">
+            <h2 id="imagery-search-heading">🛰️ Imagery Search</h2>
+            <div class="form-group">
+                <label for="bbox" class="sr-only">Bounding box coordinates</label>
+                <input type="text" id="bbox" placeholder="Bbox: west,south,east,north" value="73.1,18.1,73.9,18.6"
+                    onchange="fitMapToBbox()" aria-describedby="bbox-help">
+                <div id="bbox-help" class="help-text">Format: west,south,east,north</div>
+            </div>
+            <div class="button-group">
+                <button type="button" onclick="syncBboxWithMap()" aria-label="Sync bounding box with current map view">📍 Sync with Map</button>
+                <button type="button" onclick="fitMapToBbox()" aria-label="Fit map to bounding box">🗺️ Fit Map</button>
+            </div>
+            <div class="form-group">
+                <label for="datetime" class="sr-only">Date range</label>
+                <input type="text" id="datetime" placeholder="Date: 2025-06-01T00:00:00Z/2025-08-31T23:59:59Z"
+                    value="2025-03-01T00:00:00Z/2025-03-31T23:59:59Z" aria-describedby="datetime-help">
+                <div id="datetime-help" class="help-text">Format: start/end in ISO format</div>
+            </div>
+            <button type="button" onclick="searchImagery()" class="primary-button">Search Imagery</button>
+            <div class="form-group">
+                <label for="imagery-select" class="sr-only">Select imagery from search results</label>
+                <select id="imagery-select" onchange="selectImagery()" aria-label="Available imagery">
+                    <option value="">Select imagery...</option>
+                </select>
+            </div>
+            <button type="button" onclick="fitToImagery()" id="fit-imagery-btn" style="display:none;" aria-label="Fit map to selected imagery bounds">🎯 Fit to Imagery</button>
+        </section>
+
+        <section class="section" aria-labelledby="rgb-composites-heading">
+            <h2 id="rgb-composites-heading">🎨 RGB Composites</h2>
+            <div id="rgb-buttons" class="button-grid" role="group" aria-label="RGB composite options"></div>
+        </section>
+
+        <section class="section" aria-labelledby="spectral-indices-heading">
+            <h2 id="spectral-indices-heading">📊 Spectral Indices</h2>
+            <div id="indices-container" class="indices-grid" role="group" aria-label="Spectral index options"></div>
+        </section>
+
+        <section class="section" aria-labelledby="visualization-heading">
+            <h2 id="visualization-heading">⚙️ Visualization</h2>
+            <div class="form-group">
+                <label for="opacity">Opacity: <span id="opacity-value" aria-live="polite">80%</span></label>
+                <input type="range" id="opacity" min="0" max="100" value="80" oninput="updateOpacity(this.value)" 
+                    aria-describedby="opacity-help">
+                <div id="opacity-help" class="help-text">Adjust layer transparency</div>
+            </div>
+            <div class="cache-controls">
+                <button type="button" onclick="clearCache()" class="secondary-button">🗑️ Clear Cache</button>
+                <button type="button" onclick="showCacheStats()" class="secondary-button">📊 Cache Stats</button>
+            </div>
+        </section>
+    </aside>
+
+    <div class="info-panel" id="info-panel" style="display: none;" role="status" aria-live="polite"></div>
+    <div class="loading" id="loading" style="display: none;" role="status" aria-live="polite" aria-label="Loading content">
+        <div class="spinner"></div>
+        <span>Loading...</span>
+    </div>
+
+    <script>
+        let map, currentImageryUrl = null, currentLayer = null, currentImageryData = null;
+        let indices = {}, rgbComposites = {};
+        let currentActiveType = null;
+
+        // Initialize map
+        map = new maplibregl.Map({
+            container: 'map',
+            style: {
+                version: 8,
+                sources: {
+                    'osm': {
+                        type: 'raster',
+                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                        tileSize: 256
+                    }
+                },
+                layers: [{
+                    id: 'osm',
+                    type: 'raster',
+                    source: 'osm'
+                }]
+            },
+            center: [73, 18],
+            zoom: 14
+        });
+
+        // Load configuration
+        async function loadConfig() {
+            const [indicesRes, rgbRes] = await Promise.all([
+                fetch('/api/indices'),
+                fetch('/api/rgb')
+            ]);
+            indices = await indicesRes.json();
+            rgbComposites = await rgbRes.json();
+
+            renderRGBButtons();
+            renderIndicesButtons();
+        }
+
+        function renderRGBButtons() {
+            const container = document.getElementById('rgb-buttons');
+            container.innerHTML = Object.entries(rgbComposites).map(([key, rgb]) =>
+                `<button class="index-btn" onclick="loadRGBComposite('${key}')">${rgb.name}</button>`
+            ).join('');
+        }
+
+        function renderIndicesButtons() {
+            const container = document.getElementById('indices-container');
+            const categories = {};
+
+            Object.entries(indices).forEach(([key, index]) => {
+                if (!categories[index.category]) categories[index.category] = [];
+                categories[index.category].push([key, index]);
+            });
+
+            container.innerHTML = Object.entries(categories).map(([category, items]) => `
+                <div class="category">
+                    <div class="category-title">${category.toUpperCase()}</div>
+                    <div class="index-grid">
+                        ${items.map(([key, index]) =>
+                `<button class="index-btn" onclick="loadIndex('${key}')" title="${index.description}">${key}</button>`
+            ).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function searchImagery() {
+            showLoading(true);
+            const bbox = document.getElementById('bbox').value;
+            const datetime = document.getElementById('datetime').value;
+
+            try {
+                const response = await fetch(`/api/stac/search?bbox=${bbox}&datetime=${datetime}&limit=20`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || !data.features || !Array.isArray(data.features)) {
+                    throw new Error('Invalid response format: missing features array');
+                }
+
+                if (data.features.length === 0) {
+                    showInfo('No imagery found for the specified area and time range');
+                    return;
+                }
+
+                const select = document.getElementById('imagery-select');
+                select.innerHTML = '<option value="">Select imagery...</option>' +
+                    data.features.map((feature, index) => {
+                        const date = new Date(feature.properties.datetime).toLocaleDateString();
+                        const cloud = Math.round(feature.properties['eo:cloud_cover'] || 0);
+                        return `<option value="${index}">${date} (${cloud}% cloud)</option>`;
+                    }).join('');
+
+                // Store the features data globally
+                window.stacFeatures = data.features;
+
+                showInfo(`Found ${data.features.length} images`);
+            } catch (error) {
+                console.error('STAC search error:', error);
+                showInfo('Error searching imagery: ' + error.message);
+            }
+            showLoading(false);
+        }
+
+        function selectImagery() {
+            const select = document.getElementById('imagery-select');
+            const selectedIndex = parseInt(select.value);
+
+            if (!isNaN(selectedIndex) && window.stacFeatures && window.stacFeatures[selectedIndex]) {
+                currentImageryData = window.stacFeatures[selectedIndex];
+                currentImageryUrl = currentImageryData.links.find(link => link.rel === 'self')?.href || currentImageryData.id;
+
+                // Show the fit to imagery button
+                document.getElementById('fit-imagery-btn').style.display = 'inline-block';
+
+                showInfo('Imagery selected. Choose an index or RGB composite to visualize.');
+            } else {
+                // Hide the button if no imagery selected
+                document.getElementById('fit-imagery-btn').style.display = 'none';
+            }
+        }
+
+        function fitToImagery() {
+            if (currentImageryData && currentImageryData.bbox) {
+                const [minX, minY, maxX, maxY] = currentImageryData.bbox;
+                map.fitBounds([[minX, minY], [maxX, maxY]], {
+                    padding: 50,
+                    duration: 1000
+                });
+                showInfo('Map fitted to imagery bounds');
+            }
+        }
+
+        async function loadIndex(indexId) {
+            showLoading(true);
+            removeCurrentLayer();
+
+            // Update button states
+            document.querySelectorAll('.index-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[onclick="loadIndex('${indexId}')"]`)?.classList.add('active');
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            let tileUrl;
+            
+            if (mode === 'global') {
+                // Use global tile endpoint - works anywhere on Earth!
+                tileUrl = `/tiles/${indexId}/{z}/{x}/{y}.png`;
+            } else {
+                // Use specific imagery endpoint
+                if (!currentImageryUrl || !currentImageryData) {
+                    showInfo('Please select imagery first');
+                    showLoading(false);
+                    return;
+                }
+                const collection = currentImageryData.collection || '';
+                tileUrl = `/api/tiles/${indexId}/{z}/{x}/{y}.png?stac_url=${encodeURIComponent(currentImageryUrl)}&collection=${collection}`;
+            }
+
+            const sourceConfig = {
+                type: 'raster',
+                tiles: [tileUrl],
+                tileSize: 256
+            };
+
+            map.addSource('spectral-tiles', sourceConfig);
+
+            map.addLayer({
+                id: 'spectral-layer',
+                type: 'raster',
+                source: 'spectral-tiles',
+                paint: {
+                    'raster-opacity': 0.8
+                }
+            });
+
+            currentLayer = 'spectral-layer';
+            currentActiveType = 'index';
+            
+            if (mode === 'global') {
+                showInfo(`🌍 ${indices[indexId].name}: Global seamless coverage with multi-sensor harmonization`);
+            } else {
+                showInfo(`📊 ${indices[indexId].name} loaded`);
+            }
+            showLoading(false);
+        }
+
+        async function loadRGBComposite(compositeId) {
+            showLoading(true);
+            removeCurrentLayer();
+
+            // Update button states
+            document.querySelectorAll('.index-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`button[onclick="loadRGBComposite('${compositeId}')"]`)?.classList.add('active');
+
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            let tileUrl;
+            
+            if (mode === 'global') {
+                // Use global RGB tile endpoint - seamless multi-sensor coverage!
+                tileUrl = `/tiles/rgb/${compositeId}/{z}/{x}/{y}.png`;
+            } else {
+                // Use specific imagery endpoint
+                if (!currentImageryUrl || !currentImageryData) {
+                    showInfo('Please select imagery first');
+                    showLoading(false);
+                    return;
+                }
+                const collection = currentImageryData.collection || '';
+                tileUrl = `/api/tiles/rgb/${compositeId}/{z}/{x}/{y}.png?stac_url=${encodeURIComponent(currentImageryUrl)}&collection=${collection}`;
+            }
+
+            const sourceConfig = {
+                type: 'raster',
+                tiles: [tileUrl],
+                tileSize: 256
+            };
+
+            map.addSource('rgb-tiles', sourceConfig);
+
+            map.addLayer({
+                id: 'rgb-layer',
+                type: 'raster',
+                source: 'rgb-tiles',
+                paint: {
+                    'raster-opacity': 0.8
+                }
+            });
+
+            currentLayer = 'rgb-layer';
+            currentActiveType = 'rgb';
+            
+            if (mode === 'global') {
+                showInfo(`🛰️ ${rgbComposites[compositeId].name}: Global harmonized multi-sensor imagery`);
+            } else {
+                showInfo(`🎨 ${rgbComposites[compositeId].name} loaded`);
+            }
+            showLoading(false);
+        }
+
+        function removeCurrentLayer() {
+            if (currentLayer && map.getLayer(currentLayer)) {
+                map.removeLayer(currentLayer);
+                map.removeSource(currentLayer.includes('rgb') ? 'rgb-tiles' : 'spectral-tiles');
+                currentLayer = null;
+            }
+            // Reset button states
+            document.querySelectorAll('.index-btn').forEach(btn => btn.classList.remove('active'));
+            currentActiveType = null;
+        }
+
+        function updateOpacity(value) {
+            document.getElementById('opacity-value').textContent = value + '%';
+            if (currentLayer) {
+                map.setPaintProperty(currentLayer, 'raster-opacity', value / 100);
+            }
+        }
+
+        function showInfo(message) {
+            const panel = document.getElementById('info-panel');
+            panel.textContent = message;
+            panel.style.display = 'block';
+            setTimeout(() => panel.style.display = 'none', 5000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function syncBboxWithMap() {
+            const bounds = map.getBounds();
+            const bbox = [
+                bounds.getWest().toFixed(6),
+                bounds.getSouth().toFixed(6),
+                bounds.getEast().toFixed(6),
+                bounds.getNorth().toFixed(6)
+            ].join(',');
+
+            document.getElementById('bbox').value = bbox;
+            showInfo('Bbox synced with current map view');
+        }
+
+        function fitMapToBbox() {
+            const bboxInput = document.getElementById('bbox').value;
+            if (!bboxInput) return;
+
+            try {
+                const coords = bboxInput.split(',').map(parseFloat);
+                if (coords.length !== 4) throw new Error('Invalid bbox format');
+
+                const [west, south, east, north] = coords;
+                map.fitBounds([[west, south], [east, north]], {
+                    padding: 50,
+                    duration: 1000
+                });
+                showInfo('Map fitted to bbox');
+            } catch (error) {
+                showInfo('Invalid bbox format. Use: west,south,east,north');
+            }
+        }
+
+        // Cache management functions
+        async function clearCache() {
+            showLoading(true);
+            try {
+                const response = await fetch('/api/cache/clear', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                showInfo(data.message || 'Cache cleared successfully');
+            } catch (error) {
+                showInfo('Error clearing cache: ' + error.message);
+            }
+            showLoading(false);
+        }
+
+        async function showCacheStats() {
+            showLoading(true);
+            try {
+                const response = await fetch('/api/cache/stats');
+                const data = await response.json();
+                
+                if (data.status === 'error') {
+                    showInfo('Error getting cache stats: ' + data.message);
+                } else {
+                    const stats = `Cache Stats:\n` +
+                        `Memory Keys: ${data.cache.memory_cache_keys}\n` +
+                        `Redis Running: ${data.cache.redis_running}\n` +
+                        `Cached Tiles: ${data.file_cache.cached_tiles}`;
+                    showInfo(stats);
+                }
+            } catch (error) {
+                showInfo('Error getting cache stats: ' + error.message);
+            }
+            showLoading(false);
+        }
+
+        // Enhanced tile info display
+        async function showTileInfo(z, x, y) {
+            try {
+                const response = await fetch(`/api/tile-info/${z}/${x}/${y}`);
+                const data = await response.json();
+                
+                let info = `Tile ${z}/${x}/${y}:\n` +
+                    `Available Assets: ${data.available_assets}\n` +
+                    `Sensors: ${data.sensors.join(', ')}\n` +
+                    `Coverage: ${data.coverage}`;
+                
+                if (data.best_asset) {
+                    info += `\nBest Asset: ${data.best_asset.collection}\n` +
+                        `Date: ${new Date(data.best_asset.datetime).toLocaleDateString()}\n` +
+                        `Cloud: ${Math.round(data.best_asset.cloud_cover)}%`;
+                }
+                
+                showInfo(info);
+            } catch (error) {
+                console.error('Error getting tile info:', error);
+            }
+        }
+
+        // Add map click handler to show tile info
+        map.on('click', (e) => {
+            const zoom = Math.floor(map.getZoom());
+            const coord = [e.lngLat.lng, e.lngLat.lat];
+            // Convert to tile coordinates
+            const tileZ = Math.min(zoom, 14); // Cap at zoom 14 for tile info
+            const tileX = Math.floor((coord[0] + 180) / 360 * Math.pow(2, tileZ));
+            const tileY = Math.floor((1 - Math.log(Math.tan(coord[1] * Math.PI / 180) + 1 / Math.cos(coord[1] * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, tileZ));
+            
+            showTileInfo(tileZ, tileX, tileY);
+        });
+
+        // Enhanced search with better error handling
+        async function searchImageryEnhanced() {
+            showLoading(true);
+            const bbox = document.getElementById('bbox').value;
+            const datetime = document.getElementById('datetime').value;
+
+            try {
+                const response = await fetch(`/api/stac/search?bbox=${bbox}&datetime=${datetime}&limit=20&max_cloud_cover=10`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (!data || !data.features || !Array.isArray(data.features)) {
+                    throw new Error('Invalid response format: missing features array');
+                }
+
+                if (data.features.length === 0) {
+                    showInfo('No imagery found for the specified area and time range');
+                    return;
+                }
+
+                const select = document.getElementById('imagery-select');
+                select.innerHTML = '<option value="">Select imagery...</option>' +
+                    data.features.map((feature, index) => {
+                        const date = new Date(feature.properties.datetime).toLocaleDateString();
+                        const cloud = Math.round(feature.properties['eo:cloud_cover'] || 0);
+                        const sensor = feature.collection || 'Unknown';
+                        return `<option value="${index}">${date} - ${sensor} (${cloud}% cloud)</option>`;
+                    }).join('');
+
+                // Store the features data globally
+                window.stacFeatures = data.features;
+
+                let infoMessage = `Found ${data.features.length} images`;
+                if (data.coverage_summary) {
+                    infoMessage += `\nSensors: ${data.coverage_summary.sensors_used.join(', ')}`;
+                }
+                showInfo(infoMessage);
+            } catch (error) {
+                console.error('STAC search error:', error);
+                showInfo('Error searching imagery: ' + error.message);
+            }
+            showLoading(false);
+        }
+
+        // Update the searchImagery function to use the enhanced version
+        function searchImagery() {
+            searchImageryEnhanced();
+        }
+
+        // Auto-sync bbox when map moves (optional)
+        map.on('moveend', () => {
+            // Uncomment to auto-update bbox on map movement
+            // syncBboxWithMap();
+        });
+
+        // Keyboard navigation support
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            
+            switch(e.key) {
+                case 'c':
+                    if (e.ctrlKey || e.metaKey) return; // Don't interfere with copy
+                    clearCache();
+                    break;
+                case 's':
+                    if (e.ctrlKey || e.metaKey) return; // Don't interfere with save
+                    showCacheStats();
+                    break;
+                case 'Escape':
+                    removeCurrentLayer();
+                    break;
+            }
+        });
+
+        // Switch between global and imagery modes
+        function switchMode(mode) {
+            const imagerySection = document.getElementById('imagery-search-section');
+            if (mode === 'global') {
+                imagerySection.style.display = 'none';
+                removeCurrentLayer();
+                showInfo('🌍 Global Coverage Mode: Click any spectral index or RGB composite for seamless worldwide imagery');
+            } else {
+                imagerySection.style.display = 'block';
+                removeCurrentLayer();
+                showInfo('🛰️ Specific Imagery Mode: Search and select imagery for a specific area');
+            }
+        }
+
+        // Initialize
+        map.on('load', () => {
+            loadConfig();
+            // Set initial mode message
+            showInfo('🌍 Global Coverage Mode: Click any spectral index or RGB composite for seamless worldwide imagery');
+        });
+    </script>
+</body>
+
+</html>
